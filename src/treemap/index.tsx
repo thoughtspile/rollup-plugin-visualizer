@@ -84,7 +84,7 @@ const drawChart = (
     const sizes: ModuleLengths = { renderedLength: 0, gzipLength: 0, brotliLength: 0 };
     if (isModuleTree(nodeData)) {
       for (const sizeKey of availableSizeProperties) {
-        sizes[sizeKey] = nodeData.children.reduce(
+        sizes[sizeKey] = nodeData[sizeKey] ?? nodeData.children.reduce(
           (acc, child) => getModuleSize(child, sizeKey) + acc,
           0
         );

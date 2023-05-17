@@ -6,12 +6,14 @@ export const isModuleTree = (mod: ModuleTree | ModuleTreeLeaf): mod is ModuleTre
 export type ModuleUID = string;
 export type BundleId = string;
 
-export interface ModuleTreeLeaf {
+export interface ModuleTreeLeaf extends Partial<ModuleLengths> {
+  gzipSize?: number;
+  brotliSize?: number;
   name: string;
   uid: ModuleUID;
 }
 
-export interface ModuleTree {
+export interface ModuleTree extends Partial<ModuleLengths> {
   name: string;
   children: Array<ModuleTree | ModuleTreeLeaf>;
 }

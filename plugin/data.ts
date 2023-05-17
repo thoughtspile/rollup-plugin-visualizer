@@ -64,7 +64,7 @@ const mergeSingleChildTrees = (tree: ModuleTree): ModuleTree | ModuleTreeLeaf =>
 
 export const buildTree = (
   bundleId: string,
-  modules: Array<ModuleLengths & { id: string }>,
+  modules: Array<ModuleLengths & { id: string; code: string }>,
   mapper: ModuleMapper
 ): ModuleTree => {
   const tree: ModuleTree = {
@@ -72,12 +72,13 @@ export const buildTree = (
     children: [],
   };
 
-  for (const { id, renderedLength, gzipLength, brotliLength } of modules) {
+  for (const { id, renderedLength, gzipLength, brotliLength, code } of modules) {
     const bundleModuleUid = mapper.setNodePart(bundleId, id, {
       renderedLength,
       gzipLength,
       brotliLength,
     });
+    mapper.setNodeCode(bundleModuleUid, code);
 
     const trimmedModuleId = mapper.trimProjectRootId(id);
 

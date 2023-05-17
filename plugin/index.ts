@@ -171,11 +171,12 @@ export const visualizer = (
       }: {
         id: string;
         code: string;
-      }): Promise<ModuleLengths & { id: string }> => {
+      }): Promise<ModuleLengths & { id: string; code: string }> => {
         const isCodeEmpty = code == null || code == "";
 
         const result = {
           id,
+          code,
           gzipLength: isCodeEmpty ? 0 : await gzipSizeGetter(code),
           brotliLength: isCodeEmpty ? 0 : await brotliSizeGetter(code),
           renderedLength: isCodeEmpty ? 0 : Buffer.byteLength(code, "utf-8"),
@@ -222,7 +223,7 @@ export const visualizer = (
           const modules = await Promise.all(
             Object.entries(bundle.modules)
               .filter(([id]) => filter(bundleId, id))
-              .map(([id, { code }]) => ModuleLengths({ id, code: code || '' }))
+              .map(([id, { code }]) => ModuleLengths({ id, code: code || "" }))
           );
 
           tree = buildTree(bundleId, modules, mapper);
@@ -252,6 +253,23 @@ export const visualizer = (
       }
 
       const tree = mergeTrees(roots);
+
+      function collectCode(root: ModuleTree | ModuleTreeLeaf): string {
+        const own: string = "uid" in root ? mapper.getNodeCode(root.uid) : "";
+        const children = "children" in root ? root.children : [];
+        return `${own}${children.map(collectCode).join("")}`;
+      }
+      async function collectCompressedSize(root: ModuleTree | ModuleTreeLeaf) {
+        const code = collectCode(root);
+        const [gzipLength, brotliLength] = await Promise.all([
+          gzipSizeGetter(code),
+          brotliSizeGetter(code),
+          ...("children" in root ? root.children.map(collectCompressedSize) : []),
+        ]);
+        root.gzipLength = gzipLength;
+        root.brotliLength = brotliLength;
+      }
+      await collectCompressedSize(tree);
 
       const data: VisualizerData = {
         version,

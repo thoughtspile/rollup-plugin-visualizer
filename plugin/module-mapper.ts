@@ -19,6 +19,7 @@ type ModuleIdStorage = {
 export class ModuleMapper {
   private nodeParts: Record<ModuleUID, ModulePart> = {};
   private nodeMetas: Record<string, ModuleIdStorage> = {};
+  private nodeCode: Record<string, string> = {};
 
   constructor(private projectRoot: string | RegExp) {}
 
@@ -81,6 +82,14 @@ export class ModuleMapper {
     this.getModuleUid(moduleId);
     this.nodeMetas[moduleId].meta.isEntry = value.isEntry;
     this.nodeMetas[moduleId].meta.isExternal = value.isExternal;
+  }
+
+  setNodeCode(uid: string, code: string) {
+    this.nodeCode[uid] = code;
+  }
+
+  getNodeCode(uid: string) {
+    return this.nodeCode[uid] || "";
   }
 
   hasNodePart(bundleId: string, moduleId: string): boolean {
